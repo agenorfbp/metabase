@@ -168,22 +168,22 @@
 
 (defn get-or-create-database!
   "Create DBMS database associated with DATABASE-DEFINITION, create corresponding Metabase `Databases`/`Tables`/`Fields`, and sync the `Database`.
-   DATASET-LOADER should be an object that implements `IDatasetLoader`; it defaults to the value returned by the method `dataset-loader` for the
+   DRIVER should be an object that implements `IDatasetLoader`; it defaults to the value returned by the method `driver` for the
    current dataset (`*driver*`), which is H2 by default."
   ([^DatabaseDefinition database-definition]
    (get-or-create-database! *driver* database-definition))
-  ([dataset-loader {:keys [database-name], :as ^DatabaseDefinition database-definition}]
-   (let [engine (i/engine dataset-loader)]
+  ([driver {:keys [database-name], :as ^DatabaseDefinition database-definition}]
+   (let [engine (i/engine driver)]
      (or (i/metabase-instance database-definition engine)
          (do
            ;; Create the database
-           (i/create-db! dataset-loader database-definition)
+           (i/create-db! driver database-definition)
 
            ;; Add DB object to Metabase DB
            (let [db (db/insert! Database
                       :name    database-name
                       :engine  (name engine)
-                      :details (i/database->connection-details dataset-loader :db database-definition))]
+                      :details (i/database->connection-details driver :db database-definition))]
 
              ;; Sync the database
              (sync-database/sync-database! db)
@@ -211,16 +211,16 @@
 
 (defn remove-database!
   "Delete Metabase `Database`, `Fields` and `Tables` associated with DATABASE-DEFINITION, then remove the physical database from the associated DBMS.
-   DATASET-LOADER should be an object that implements `IDatasetLoader`; by default it is the value returned by the method `dataset-loader` for the
+   DRIVER should be an object that implements `IDatasetLoader`; by default it is the value returned by the method `driver` for the
    current dataset, bound to `*driver*`."
   ([^DatabaseDefinition database-definition]
    (remove-database! *driver* database-definition))
-  ([dataset-loader ^DatabaseDefinition database-definition]
+  ([driver ^DatabaseDefinition database-definition]
    ;; Delete the Metabase Database and associated objects
-   (db/cascade-delete! Database :id (:id (i/metabase-instance database-definition (i/engine dataset-loader))))
+   (db/cascade-delete! Database :id (:id (i/metabase-instance database-definition (i/engine driver))))
 
    ;; now delete the DBMS database
-   (i/destroy-db! dataset-loader database-definition)))
+   (i/destroy-db! driver database-definition)))
 
 
 (def ^:private loader->loaded-db-def
@@ -254,7 +254,7 @@
 
 
 (defmacro with-temp-db
-  "Load and sync DATABASE-DEFINITION with DATASET-LOADER and execute BODY with the newly created `Database` bound to DB-BINDING,
+  "Load and sync DATABASE-DEFINITION with DRIVER and execute BODY with the newly created `Database` bound to DB-BINDING,
    and make it the current database for `metabase.test.data` functions like `id`.
 
      (with-temp-db [db tupac-sightings]

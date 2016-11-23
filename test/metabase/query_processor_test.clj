@@ -5,7 +5,6 @@
   (:require [clojure.set :as set]
             [expectations :refer :all]
             [metabase.driver :as driver]
-            #_[metabase.query-processor :refer :all]
             [metabase.test.data :as data]
             [metabase.test.data.datasets :as datasets]
             [metabase.util :as u]))

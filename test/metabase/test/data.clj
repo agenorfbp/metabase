@@ -106,6 +106,7 @@
 
      (run-query* (query (source-table 5) ...))"
   [query :- qi/Query]
+  (println "(db):" (:name (db)) (:id (db)) (:details (db))) ; NOCOMMIT
   (qp/process-query (wrap-inner-query query)))
 
 (defmacro run-query
@@ -174,7 +175,10 @@
    (get-or-create-database! *driver* database-definition))
   ([driver {:keys [database-name], :as ^DatabaseDefinition database-definition}]
    (let [engine (i/engine driver)]
-     (or (i/metabase-instance database-definition engine)
+     (or (u/prog1 (i/metabase-instance database-definition engine)
+           (println "metabase-instance:" (:id <>) (:name <>)) ; NOCOMMIT
+           )
+         (println (u/format-color 'magenta "creating database: %s %s" driver (:database-name database-definition))) ; NOCOMMIT
          (do
            ;; Create the database
            (i/create-db! driver database-definition)
@@ -184,6 +188,7 @@
                       :name    database-name
                       :engine  (name engine)
                       :details (i/database->connection-details driver :db database-definition))]
+
 
              ;; Sync the database
              (sync-database/sync-database! db)

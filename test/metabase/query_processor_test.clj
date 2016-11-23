@@ -7,7 +7,19 @@
             [metabase.driver :as driver]
             [metabase.test.data :as data]
             [metabase.test.data.datasets :as datasets]
-            [metabase.util :as u]))
+            metabase.test.data.interface
+            [metabase.util :as u]
+
+            ;; WOW
+            metabase.db
+            metabase.driver
+            metabase.query-processor
+            metabase.query-processor.expand
+            metabase.query-processor.interface
+            metabase.test.data
+            metabase.test.data.dataset-definitions
+            metabase.test.data.datasets
+            metabase.test.data.interface))
 
 ;; make sure all the driver test extension namespaces are loaded <3
 ;; if this isn't done tests randomly fail for some reason I don't fully understand :(

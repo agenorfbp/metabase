@@ -9,6 +9,16 @@
             [metabase.test.data.datasets :as datasets]
             [metabase.util :as u]))
 
+;; make sure all the driver test extension namespaces are loaded <3
+;; if this isn't done tests randomly fail for some reason I don't fully understand :(
+(doseq [engine (keys (driver/available-drivers))]
+  (let [test-ns (symbol (str "metabase.test.data." (name engine)))]
+    (try
+      (require test-ns)
+      (catch Throwable e
+        (println (format "Error loading %s: %s" test-ns (.getMessage e)))))))
+
+
 ;;; ------------------------------------------------------------ Helper Fns + Macros ------------------------------------------------------------
 
 ;; Event-Based DBs aren't tested here, but in `event-query-processor-test` instead.
